@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+{% block title %}Level {{level.id}}: {{level.name}}{% endblock %}
+{% block stylesheets %}
+  {{ parent() }}
+  <link href="/assets/css/level.css" rel="stylesheet">
+{% endblock %}
+{% block main %}
+    <div class="ui mini modal">
+        <div class="ui icon header">
+            <i class="green check icon"></i>
+            恭喜您通过了此关
+        </div>
+        <div class="content">
+            <p>给本关留下一个评价？
+                <div class="ui star rating" data-rating="0" data-max-rating="5"></div>
+            </p>
+        </div>
+        <div class="actions">
+            <div class="ui green ok inverted button" id="next-level">
+                下一关
+            </div>
+        </div>
+    </div>
+
+    <div class="ui middle aligned center aligned grid">
+        <div class="column">
+            <div class="ui raised centered large card">
+                {% block pre_block %}
+                {# <!-- 推荐的展示图片方法 -->
+                <div class="image">
+                    <img src="https://link/to/img">
+                </div>
+                #}
+                {% endblock %}
+                <div class="content" style="padding: 30px 0">
+                    <div class="header">
+                        {{level.name}}
+                    </div>
+                    <div class="meta">
+                        {{level.getPassedNum}}/{{level.getTriedNum}} ({{(level.getPassedNum/(level.getTriedNum==0?1:level.getTriedNum))*100//1}}%)人通过了这关
+                        <p>
+                        {% for tag in level.tags %}
+                            {% set tagcolor = tag|split('|') %}
+                            <a class="ui {{tagcolor[0]}} tiny label">{{tagcolor[1]}}</a>
+                        {% endfor %}
+                        </p>
+                    </div>
+                    <div class="description">
+                        {% block description %}
+                            {# <!-- 推荐的文件下载按钮 -->
+                            <a class="ui labeled icon button" style="margin-top:1rem" href="https://link/to/file">
+                                <i class="file icon"></i>下载附件
+                            </a>
+                            #}
+                        {% endblock %}
+                    </div>
+                </div>
+                <div class="extra content">
+                    {% block submit %}
+                        <div class="ui large transparent left icon input">
+                            <i class="key icon"></i>
+                            <input type="text" id="answer" placeholder="答案">
+                            <button class="ui teal button" type="submit" id="submit">提交</button>
+                        </div>
+                    <div class="ui negative hidden message" id="incorrect_answer">
+                        <div class="header" id="message_header"></div>
+                        <p id="message"></p>
+                    </div>
+                    {% endblock %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}
+
+{% block post_body_javascripts %}
+  <script src="/assets/js/level.js"></script>
+{% endblock %}

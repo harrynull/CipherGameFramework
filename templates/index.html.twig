@@ -1,0 +1,191 @@
+{% extends 'base.html.twig' %}
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="/assets/css/index.css" rel="stylesheet">
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script src="/assets/js/tablesort.js"></script>
+{% endblock %}
+{% block header %}
+  <div class="ui small modal">
+        <div class="content">
+            <form class="ui form" style="padding:10px" method="post" action="/sync">
+                <div class="two fields">
+                  <div class="field">
+                    <label>邮箱</label>
+                    <input type="email" name="email" placeholder="someone@example.org">
+                  </div>
+                  <div class="field">
+                    <label>显示名</label>
+                    <input type="text" name="display_name" placeholder="(留空使用邮箱名/不修改)">
+                  </div>
+                </div>
+                <div class="field">
+                  <label>密码</label>
+                  <input type="password" name="password" placeholder="设置一个密码/填写您上次用的密码">
+                </div>
+                <div class="field">
+                  <div class="ui checkbox">
+                    <input type="checkbox" name="accept_terms" tabindex="0">
+                    <label>我已阅读并同意本网站的<a href="eula.html">用户协议</a>。</label>
+                  </div>
+                </div>
+                <button class="ui teal button" type="submit"><i class="sync icon"></i>同步进度</button>
+              </form>
+        </div>
+    </div>
+  <div class="ui inverted teal vertical masthead center aligned segment">
+
+    <div class="ui container">
+      <div class="ui large secondary menu">
+        <div class="right item">
+          <a class="ui inverted button" href="/editor/new">提交关卡</a>
+          <a class="ui inverted button" onclick="$('.ui.modal').modal('show');">同步进度</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="ui text container">
+      <h1 class="ui inverted header">
+        謎.Games
+      </h1>
+      <h2>解决「謎」题吧</h2>
+    </div>
+
+  </div>
+{% endblock %}
+
+{% block main %}
+
+  <div class="ui main container">
+    <div class="ui two column stackable grid container">
+      <div class="twelve wide left floated column">
+        <div class="ui three column middle aligned grid">
+          <div class="eleven wide left floated column">
+            <div class="ui green progress" id="levels_progress" data-value="{{ user.getPassedLevels|length }}" data-total="{{ levels|length }}">
+              <div class="bar">
+                <div class="progress"></div>
+              </div>
+              <div class="label">关卡进度</div>
+            </div>
+          </div>
+          <div class="two wide right floated column">
+            <div class="ui small statistic">
+              <div class="value">{{ user.score }}</div>
+              <div class="label">积分</div>
+            </div>
+          </div>
+          <div class="two wide right floated column">
+            <div class="ui small statistic">
+              <div class="value">{{ rank }}</div>
+              <div class="label">排名</div>
+            </div>
+          </div>
+        </div>
+        <h2 class="ui horizontal header divider">关卡列表</h2>
+        <table class="ui very basic sortable padded table">
+          <thead>
+            <tr>
+              <th class="collapsing"></th>
+              <th class="collapsing">关卡</th>
+              <th>标题</th>
+              <th class="right aligned collapsing">作者</th>
+              <th class="right aligned collapsing">积分</th>
+              <th class="right aligned collapsing">通过率</th>
+              <th class="right aligned collapsing">评价</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for level in levels %}
+            <tr>
+              <td data-sort-value="{{level.getUnlockScore}}">
+                {% if level.id in user.getPassedLevels %}<i class="large green check icon"></i>{% endif %}
+                {% if level.id not in user.getPassedLevels and user.score < level.unlockScore %}
+                  <div class="ui icon" data-tooltip="{{level.getUnlockScore}} 点积分解锁" data-inverted="inverted"><i class="large lock icon"></i></div>
+                {% endif %}
+              </td>
+              <td>{{level.id}}</td>
+              <td>
+                <a href="nazo/{{level.id}}"}>{{level.name}}</a>
+
+                {% if level.underReview %}
+                  <a href="editor/edit/{{level.id}}"}>(审核)</a>
+                {% endif %}
+                {% for tag in level.tags %}
+                  {% if tag!="" %}
+                  {% set tagcolor = tag|split('|') %}
+                  <span class="right_floated tags">
+                    <a class="ui {{tagcolor[0]}} tiny label">{{tagcolor[1]}}</a>
+                  </span>
+                  {% endif %}
+                {% endfor %}
+              </td>
+              <td class="right aligned">{{level.author}}</td>
+              <td class="right aligned">{{level.score}}</td>
+              <td class="right aligned">{{level.getPassedNum}}/{{level.getTriedNum}}({{(level.getPassedNum/(level.getTriedNum==0?1:level.getTriedNum))*100//1}}%)</td>
+              <td class="right aligned">{{level.getRatedNum==0? "--": ((level.getTotalRating/level.getRatedNum)|number_format(1)) }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="three wide right floated column">
+        <h2 class="ui dividing header">排行榜</h2>
+        <table class="ui very basic table">
+          <tbody>
+            {% for user in top10 %}
+            <tr>
+              <td class="collapsing">{{ loop.index }}</td>
+              <td>{{user.getDisplayName}}</td>
+              <td>{{user.getScore}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block footer %}
+  <div class="ui teal inverted vertical footer segment">
+    <div class="ui container">
+      <div class="ui stackable inverted divided equal height stackable grid">
+        <div class="three wide column">
+          <h4 class="ui inverted header">链接</h4>
+          <div class="ui inverted link list">
+            <a href="eula.html" class="item">用户协议</a>
+          </div>
+        </div>
+
+        <div class="seven wide column">
+          <h4 class="ui inverted header">关于</h4>
+          <p>这是一个<a href="https://harrynull.tech">咸鱼</a>做的解谜网站</p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block post_body_javascripts %}
+  <script>
+    $('#levels_progress').progress({
+      label: 'ratio',
+      text: {
+        ratio: '{value} / {total}'
+      },
+      showActivity: false
+    });
+    $('.ui.form').form({
+    fields: {
+      email           : 'empty',
+      password        : ['minLength[6]', 'empty'],
+      accept_terms    : 'checked'
+    }
+  });
+  $('.table').tablesort();
+  </script>
+  
+{% endblock %}
